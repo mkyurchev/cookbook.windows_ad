@@ -2,7 +2,7 @@
 # Author:: Derek Groh (<dgroh@arch.tamu.edu>)
 # Cookbook Name:: windows_ad
 # Provider:: group
-# 
+#
 # Copyright 2013, Texas A&M
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -59,8 +59,8 @@ action :modify do
 
     new_resource.options.each do |option, value|
       cmd << " -#{option} #{value}"
-      # [-samid SAMName] [-desc Description] [-secgrp {yes | no}] [-scope {l | g | u}] [{-addmbr | -rmmbr | -chmbr} MemberDN ...] [{-s Server | -d Domain}] [-u UserName] [-p {Password | *}] [-c] [-q] [{-uc | -uco | -uci}] 
-    end 
+      # [-samid SAMName] [-desc Description] [-secgrp {yes | no}] [-scope {l | g | u}] [{-addmbr | -rmmbr | -chmbr} MemberDN ...] [{-s Server | -d Domain}] [-u UserName] [-p {Password | *}] [-c] [-q] [{-uc | -uco | -uci}]
+    end
 
     execute "Modify_#{new_resource.name}" do
       command cmd
@@ -112,13 +112,17 @@ action :delete do
     new_resource.updated_by_last_action(true)
   else
     Chef::Log.debug("The object has already been removed")
-    new_resource.updated_by_last_action(false)  
+    new_resource.updated_by_last_action(false)
   end
 end
 
 def dn
   dn = "CN=#{new_resource.name},"
-  dn << new_resource.ou.split("/").reverse.map { |k| "OU=#{k}" }.join(",") << ","
+  if /(U|u)sers/.match(new_resource.ou)
+    dn << "CN=#{new_resource.ou},"
+  else
+    dn << new_resource.ou.split("/").reverse.map { |k| "OU=#{k}" }.join(",") << ","
+  end
   dn << new_resource.domain_name.split(".").map! { |k| "DC=#{k}" }.join(",")
 end
 
